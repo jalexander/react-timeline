@@ -1,19 +1,19 @@
 const low = require('lowdb');
 const bodyParser = require('body-parser');
 const uuid = require('uuid');
-const art = require('./art.json');
+const timeline = require('./timeline.json');
 
 function setupDb() {
   const db = low();
 
-  db.defaults({ art: [] })
+  db.defaults({ timeline: [] })
     .value();
 
-  art.forEach((item) => {
+  timeline.forEach((item) => {
     const itemWithId = Object.assign({}, item, {
       id: uuid(),
     });
-    db.get('art').push(itemWithId).value();
+    db.get('timeline').push(itemWithId).value();
   });
 
   return db;
@@ -36,7 +36,7 @@ module.exports = (app) => {
 
   app.use(bodyParser.json());
 
-  app.get('/api/art', (req, res) => {
-    res.send(db.get('art').toArray().value());
+  app.get('/api/timeline', (req, res) => {
+    res.send(db.get('timeline').toArray().value());
   });
 };
