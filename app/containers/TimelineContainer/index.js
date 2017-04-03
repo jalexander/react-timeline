@@ -10,6 +10,8 @@ import { createStructuredSelector } from 'reselect';
 import makeSelectTimelineContainer from './selectors';
 import { requestTimeline } from './actions';
 
+import Globe from '../../components/Globe';
+
 export class TimelineContainer extends React.PureComponent { // eslint-disable-line react/prefer-stateless-function
   static propTypes = {
     requestTimeline: PropTypes.func.isRequired,
@@ -20,8 +22,13 @@ export class TimelineContainer extends React.PureComponent { // eslint-disable-l
   }
 
   render() {
+    const { TimelineContainer } = this.props;
+    const  { timeline } = TimelineContainer;
     return (
       <div>
+        <Globe
+          {...{ timeline }}
+        />
       </div>
     );
   }
@@ -29,6 +36,7 @@ export class TimelineContainer extends React.PureComponent { // eslint-disable-l
 
 TimelineContainer.propTypes = {
   requestTimeline: PropTypes.func.isRequired,
+  TimelineContainer: PropTypes.object,
 };
 
 const mapStateToProps = createStructuredSelector({
