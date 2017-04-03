@@ -1,17 +1,9 @@
 {
-  "name": "react-boilerplate",
-  "version": "3.4.0",
-  "description": "A highly scalable, offline-first foundation with the best DX and a focus on performance and best practices",
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/react-boilerplate/react-boilerplate.git"
-  },
+  "name": "react-globe-timeline",
   "engines": {
     "npm": ">=3",
     "node": ">=5"
   },
-  "author": "Max Stoiber",
-  "license": "MIT",
   "scripts": {
     "analyze:clean": "rimraf stats.json",
     "preanalyze": "npm run analyze:clean",
@@ -254,6 +246,7 @@
     "babel-preset-react": "6.16.0",
     "babel-preset-react-hmre": "1.1.1",
     "babel-preset-stage-0": "6.16.0",
+    "body-parser": "^1.17.1",
     "cheerio": "0.22.0",
     "circular-dependency-plugin": "2.0.0",
     "coveralls": "2.11.15",
@@ -276,6 +269,8 @@
     "imports-loader": "0.6.5",
     "jest-cli": "18.0.0",
     "lint-staged": "3.2.1",
+    "lodash": "^4.17.2",
+    "lowdb": "^0.16.0",
     "ngrok": "2.2.4",
     "node-plop": "0.5.4",
     "null-loader": "0.1.1",
