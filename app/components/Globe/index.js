@@ -46,6 +46,10 @@ class Globe extends React.PureComponent { // eslint-disable-line react/prefer-st
     }
   }
 
+  componentWillUnmount() {
+    this.stopAnimationLoop();
+  }
+
   setupScene = () => {
     this.setStageSize();
 
@@ -101,13 +105,20 @@ class Globe extends React.PureComponent { // eslint-disable-line react/prefer-st
 
     this.rotation.x = this.target.x = - Math.PI / 2 + (firstMarkerData.lon * Math.PI / 180);
     this.rotation.y = this.target.y = firstMarkerData.lat * Math.PI / 180;
-    this.animate();
+    this.startAnimationLoop();
     timeline.forEach((markerData) => {
       this.addMarker(markerData);
     });
+  }
 
-    // TODO: put active marker id in redux store
-    this.activeMarkerId = firstMarkerData.id;
+  startAnimationLoop = () => {
+    if (!this.animationFrame) {
+      this.animationFrame = window.requestAnimationFrame(this.animate);
+    }
+  }
+
+  stopAnimationLoop = () => {
+    window.cancelAnimationFrame(this.animationFrame);
   }
 
   addMarker = (markerData) => {
@@ -133,7 +144,7 @@ class Globe extends React.PureComponent { // eslint-disable-line react/prefer-st
   onMouseDown = (event) => {
     event.preventDefault();
 
-    this.mouseOnDown.x = - event.clientX;
+    this.mouseOnDown.x = -event.clientX;
     this.mouseOnDown.y = event.clientY;
 
     this.targetOnDown.x = this.target.x;
@@ -202,9 +213,13 @@ class Globe extends React.PureComponent { // eslint-disable-line react/prefer-st
     this.distanceTarget = this.distanceTarget < 350 ? 350 : this.distanceTarget;
   }
 
-  animate = () => {
-    requestAnimationFrame(() => this.animate());
+  loop = () => {
     this.sceneRender();
+  }
+
+  animate = () => {
+    this.sceneRender();
+    this.animationFrame = window.requestAnimationFrame(this.animate);
   }
 
   sceneRender = () => {
@@ -231,6 +246,7 @@ class Globe extends React.PureComponent { // eslint-disable-line react/prefer-st
   setContainerRef = (container) => {
     this.container = container;
   }
+
   render() {
     return (
       <div>
@@ -241,7 +257,7 @@ class Globe extends React.PureComponent { // eslint-disable-line react/prefer-st
           onMouseUp={this.onMouseUp}
           style={this.state.style}
         />
-    </div>
+      </div>
     );
   }
 }
