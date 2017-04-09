@@ -41,7 +41,7 @@ class Globe extends React.PureComponent { // eslint-disable-line react/prefer-st
   componentWillReceiveProps(newProps) {
     const { timeline, activeMarkerId } = newProps
     if (activeMarkerId !== this.props.activeMarkerId) {
-      const activeMarker = timeline[activeMarkerId]
+      const activeMarker = timeline.filter((item) => item.id === activeMarkerId)[0];
       this.moveToPoint(activeMarker.lat, activeMarker.lon);
     }
   }
@@ -145,43 +145,8 @@ class Globe extends React.PureComponent { // eslint-disable-line react/prefer-st
           ...this.state.style,
           cursor: 'move',
         },
-        isMouseDownOnGlobe: true,
       });
-    }
-  }
-
-  onMouseOver = () => {
-    const { timeline } = this.props
-
-    if (this.intersects[0] &&
-      !this.intersects[0].object.isGlobe &&
-      this.activeMarkerId !== this.intersects[0].object.id) {
-      this.setState({
-        style: {
-          ...this.state.style,
-          cursor: 'pointer',
-        }
-      });
-      const currentMarkerData = timeline.filter((item) => item.id === this.intersects[0].object.id);
-      // TODO: show tooltip
-      /*this.$mapTooltip.find('.map-tooltip__date')
-        .text(`${currentMarkerModel.get('year')}-${currentMarkerModel.get('location')}`);
-
-      this.$mapTooltip.find('.map-tooltip__title').text(currentMarkerModel.get('title'));
-
-      this.$mapTooltip.css({
-        left: event.pageX,
-        top: event.pageY,
-      }).addClass('is-active');*/
-    } else {
-      this.setState({
-        style: {
-          ...this.state.style,
-          cursor: 'default',
-        },
-        isMouseDownOnGlobe: false,
-      })
-      // this.$mapTooltip.removeClass('is-active');
+      this.isMouseDownOnGlobe = true
     }
   }
 
@@ -193,7 +158,7 @@ class Globe extends React.PureComponent { // eslint-disable-line react/prefer-st
     this.mouse.y = - (y / this.h) * 2 + 1;
     this.mouseVector.set(this.mouse.x, this.mouse.y, this.mouse.z);
 
-    if (this.state.isMouseDownOnGlobe && this.intersects[0] && this.intersects[0].object.isGlobe) {
+    if (this.isMouseDownOnGlobe && this.intersects[0] && this.intersects[0].object.isGlobe) {
       this.mouse.x = - event.clientX;
       this.mouse.y = event.clientY;
 
@@ -207,18 +172,9 @@ class Globe extends React.PureComponent { // eslint-disable-line react/prefer-st
   onMouseUp = () => {
     const { timeline } = this.props
 
-    if (this.state.isMouseDownOnGlobe && this.intersects[0] && !this.intersects[0].object.isGlobe) {
-      // TODO: center map on marker
-      /*if (this.activeMarkerId) {
-        const activeModel = timeline.filter((item) => item.id === this.intersects[0].object.id);
-        this.collection.get(this.activeModelCid).set({
-          isActive: false,
-        });
-      }8?
-      /*const activeModel = timeline.filter((item) => item.id === this.intersects[0].object.id);
-      activeModel.set({
-        isActive: true,
-      });*/
+    if (this.intersects[0] && !this.intersects[0].object.isGlobe) {
+      const activeMarker = timeline.filter((item) => item.id === this.intersects[0].object.modelId)[0];
+      this.props.setActiveMarker(activeMarker.id);
     }
 
     this.setState({
@@ -226,8 +182,8 @@ class Globe extends React.PureComponent { // eslint-disable-line react/prefer-st
         ...this.state.style,
         cursor: 'auto',
       },
-      isMouseDownOnGlobe: false,
     });
+    this.isMouseDownOnGlobe = false;
   }
 
   moveToPoint = (lat, lng) => {
@@ -277,14 +233,15 @@ class Globe extends React.PureComponent { // eslint-disable-line react/prefer-st
   }
   render() {
     return (
-      <Wrapper
-        innerRef={this.setContainerRef}
-        onMouseDown={this.onMouseDown}
-        onMouseOver={this.onMouseOver}
-        onMouseMove={this.onMouseMove}
-        onMouseUp={this.onMouseUp}
-        style={this.state.style}
-      ></Wrapper>
+      <div>
+        <Wrapper
+          innerRef={this.setContainerRef}
+          onMouseDown={this.onMouseDown}
+          onMouseMove={this.onMouseMove}
+          onMouseUp={this.onMouseUp}
+          style={this.state.style}
+        />
+    </div>
     );
   }
 }
