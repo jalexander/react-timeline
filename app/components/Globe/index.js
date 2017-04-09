@@ -249,15 +249,13 @@ class Globe extends React.PureComponent { // eslint-disable-line react/prefer-st
 
   render() {
     return (
-      <div>
-        <Wrapper
-          innerRef={this.setContainerRef}
-          onMouseDown={this.onMouseDown}
-          onMouseMove={this.onMouseMove}
-          onMouseUp={this.onMouseUp}
-          style={this.state.style}
-        />
-      </div>
+      <Wrapper
+        innerRef={this.setContainerRef}
+        onMouseDown={this.onMouseDown}
+        onMouseMove={this.onMouseMove}
+        onMouseUp={this.onMouseUp}
+        style={this.state.style}
+      />
     );
   }
 }

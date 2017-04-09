@@ -3,11 +3,13 @@ import {
   requestTimeline,
   requestTimelineSucceeded,
   requestTimelineFailed,
+  setActiveMarker,
 } from '../actions';
 import {
   REQUEST_TIMELINE,
   REQUEST_TIMELINE_SUCCEEDED,
   REQUEST_TIMELINE_FAILED,
+  SET_ACTIVE_MARKER,
 } from '../constants';
 
 describe('TimelineContainer actions', () => {
@@ -39,6 +41,17 @@ describe('TimelineContainer actions', () => {
         message: fixture,
       };
       expect(requestTimelineFailed(fixture)).toEqual(expected);
+    });
+  });
+
+  describe('setActiveMarker', () => {
+    it('should return the correct type and the passed id', () => {
+      const fixture = 'test-id';
+      const expected = {
+        type: SET_ACTIVE_MARKER,
+        id: fixture,
+      };
+      expect(setActiveMarker(fixture)).toEqual(expected);
     });
   });
 });

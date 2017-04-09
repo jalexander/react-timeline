@@ -1,0 +1,21 @@
+exports[`fetchTimeline Saga should call the repoLoadingError action if the response errors 1`] = `
+Object {
+  "@@redux-saga/IO": true,
+  "CALL": Object {
+    "args": Array [],
+    "context": null,
+    "fn": [Function],
+  },
+}
+`;
+
+exports[`fetchTimeline Saga should dispatch the requestTimelineSucceeded action if it requests the data successfully 1`] = `
+Object {
+  "@@redux-saga/IO": true,
+  "CALL": Object {
+    "args": Array [],
+    "context": null,
+    "fn": [Function],
+  },
+}
+`;
