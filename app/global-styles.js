@@ -10,21 +10,35 @@ injectGlobal`
 
   body {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+
+    overflow: hidden;
+
+    letter-spacing: 0.06em;
+
+    font-family: $oswald;
+    font-weight: 400;
+
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  * {
+    &,
+    &:before,
+    &:after {
+      box-sizing: border-box;
+    }
   }
 
   body.fontLoaded {
-    font-family: 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-family: 'Oswald', 'Helvetica Neue', Helvetica, Arial, sans-serif;
   }
 
   #app {
-    background-color: #fafafa;
+    background: -webkit-repeating-linear-gradient(45deg,#eeede8,#eeede8 18px,#f4f4f3 0,#f4f4f3 19px);
+    background: repeating-linear-gradient(45deg,#eeede8,#eeede8 18px,#f4f4f3 0,#f4f4f3 19px);
     min-height: 100%;
     min-width: 100%;
-  }
-
-  p,
-  label {
-    font-family: Georgia, Times, 'Times New Roman', serif;
-    line-height: 1.5em;
+    position: relative;
   }
 `;

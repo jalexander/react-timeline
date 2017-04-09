@@ -8,6 +8,7 @@ import {
   REQUEST_TIMELINE,
   REQUEST_TIMELINE_SUCCEEDED,
   REQUEST_TIMELINE_FAILED,
+  SET_ACTIVE_MARKER,
 } from './constants';
 
 export function requestTimeline() {
@@ -27,5 +28,12 @@ export function requestTimelineFailed(message) {
   return {
     type: REQUEST_TIMELINE_FAILED,
     message,
+  };
+}
+
+export function setActiveMarker(id) {
+  return {
+    type: SET_ACTIVE_MARKER,
+    id,
   };
 }
