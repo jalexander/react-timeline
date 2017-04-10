@@ -1,25 +1,23 @@
+/**
+ * TimelineContainer selectors
+ */
+
 import { createSelector } from 'reselect';
 
-/**
- * Direct selector to the timelineContainer state domain
- */
-const selectTimelineContainerDomain = () => (state) => state.get('timelineContainer');
+const selectTimelineContainer = (state) => state.get('timelineContainer');
 
-/**
- * Other specific selectors
- */
-
-
-/**
- * Default selector used by TimelineContainer
- */
-
-const makeSelectTimelineContainer = () => createSelector(
-  selectTimelineContainerDomain(),
-  (substate) => substate.toJS()
+const makeSelectTimeline = () => createSelector(
+  selectTimelineContainer,
+  (timelineContainerState) => timelineContainerState.get('timeline')
 );
 
-export default makeSelectTimelineContainer;
+const makeSelectActiveMarkerId = () => createSelector(
+  selectTimelineContainer,
+  (timelineContainerState) => timelineContainerState.get('activeMarkerId')
+);
+
 export {
-  selectTimelineContainerDomain,
+  selectTimelineContainer,
+  makeSelectTimeline,
+  makeSelectActiveMarkerId,
 };

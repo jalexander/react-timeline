@@ -7,8 +7,9 @@
 import React, { PropTypes } from 'react';
 import { connect } from 'react-redux';
 import { createStructuredSelector } from 'reselect';
-import makeSelectTimelineContainer from './selectors';
+import { makeSelectTimeline, makeSelectActiveMarkerId } from './selectors';
 import { requestTimeline, setActiveMarker } from './actions';
+import { Iterable } from 'immutable'
 
 import Globe from '../../components/Globe';
 
@@ -22,12 +23,12 @@ export class TimelineContainer extends React.PureComponent { // eslint-disable-l
   }
 
   render() {
-    const { timeline, activeMarkerId } = this.props.TimelineContainer;
+    const { timeline, activeMarkerId } = this.props;
     return (
       <div>
         {
           !!timeline &&
-          timeline.length &&
+          timeline.size > 0 &&
           <Globe
             setActiveMarker={this.props.setActiveMarker}
             {...{ activeMarkerId, timeline }}
@@ -41,11 +42,13 @@ export class TimelineContainer extends React.PureComponent { // eslint-disable-l
 TimelineContainer.propTypes = {
   requestTimeline: PropTypes.func.isRequired,
   setActiveMarker: PropTypes.func.isRequired,
-  TimelineContainer: PropTypes.object,
+  timeline: PropTypes.instanceOf(Iterable),
+  activeMarkerId: PropTypes.string,
 };
 
 const mapStateToProps = createStructuredSelector({
-  TimelineContainer: makeSelectTimelineContainer(),
+  timeline: makeSelectTimeline(),
+  activeMarkerId: makeSelectActiveMarkerId(),
 });
 
 function mapDispatchToProps(dispatch) {

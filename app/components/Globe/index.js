@@ -6,6 +6,7 @@
 
 import React, { PropTypes } from 'react';
 import THREE from 'three';
+import { Iterable } from 'immutable'
 
 import Wrapper from './Wrapper';
 
@@ -41,8 +42,8 @@ class Globe extends React.PureComponent { // eslint-disable-line react/prefer-st
   componentWillReceiveProps(newProps) {
     const { timeline, activeMarkerId } = newProps
     if (activeMarkerId !== this.props.activeMarkerId) {
-      const activeMarker = timeline.filter((item) => item.id === activeMarkerId)[0];
-      this.moveToPoint(activeMarker.lat, activeMarker.lon);
+      const activeMarker = timeline.find((item) => item.get('id') === activeMarkerId);
+      this.moveToPoint(activeMarker.get('lat'), activeMarker.get('lon'));
     }
   }
 
@@ -101,10 +102,10 @@ class Globe extends React.PureComponent { // eslint-disable-line react/prefer-st
 
   addMarkers = () => {
     const { timeline } = this.props
-    const firstMarkerData = timeline[0]
+    const firstMarkerData = timeline.get(0)
 
-    this.rotation.x = this.target.x = - Math.PI / 2 + (firstMarkerData.lon * Math.PI / 180);
-    this.rotation.y = this.target.y = firstMarkerData.lat * Math.PI / 180;
+    this.rotation.x = this.target.x = - Math.PI / 2 + (firstMarkerData.get('lon') * Math.PI / 180);
+    this.rotation.y = this.target.y = firstMarkerData.get('lat') * Math.PI / 180;
     this.startAnimationLoop();
     timeline.forEach((markerData) => {
       this.addMarker(markerData);
@@ -122,8 +123,8 @@ class Globe extends React.PureComponent { // eslint-disable-line react/prefer-st
   }
 
   addMarker = (markerData) => {
-    const phi = (90 - markerData.lat) * Math.PI / 180;
-    const theta = (180 - markerData.lon) * Math.PI / 180;
+    const phi = (90 - markerData.get('lat')) * Math.PI / 180;
+    const theta = (180 - markerData.get('lon')) * Math.PI / 180;
     const geometry = new THREE.SphereGeometry(2, 32, 32);
     const material = new THREE.MeshBasicMaterial({
       color: 0x607D8B,
@@ -135,7 +136,7 @@ class Globe extends React.PureComponent { // eslint-disable-line react/prefer-st
     marker.position.x = 200 * Math.sin(phi) * Math.cos(theta);
     marker.position.y = 200 * Math.cos(phi);
     marker.position.z = 200 * Math.sin(phi) * Math.sin(theta);
-    marker.modelId = markerData.id;
+    marker.modelId = markerData.get('id');
 
     this.scene.add(marker);
     this.pointsArray.push(marker);
@@ -184,8 +185,8 @@ class Globe extends React.PureComponent { // eslint-disable-line react/prefer-st
     const { timeline } = this.props
 
     if (this.intersects[0] && !this.intersects[0].object.isGlobe) {
-      const activeMarker = timeline.filter((item) => item.id === this.intersects[0].object.modelId)[0];
-      this.props.setActiveMarker(activeMarker.id);
+      const activeMarker = timeline.find((item) => item.get('id') === this.intersects[0].object.modelId);
+      this.props.setActiveMarker(activeMarker.get('id'));
     }
 
     this.setState({
@@ -261,7 +262,7 @@ class Globe extends React.PureComponent { // eslint-disable-line react/prefer-st
 }
 
 Globe.propTypes = {
-  timeline: PropTypes.array,
+  timeline: PropTypes.instanceOf(Iterable),
 };
 
 export default Globe;
