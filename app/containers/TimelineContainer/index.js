@@ -7,9 +7,9 @@
 import React, { PropTypes } from 'react';
 import { connect } from 'react-redux';
 import { createStructuredSelector } from 'reselect';
+import { Iterable } from 'immutable';
 import { makeSelectTimeline, makeSelectActiveMarkerId } from './selectors';
 import { requestTimeline, setActiveMarker } from './actions';
-import { Iterable } from 'immutable'
 
 import Globe from '../../components/Globe';
 

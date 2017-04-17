@@ -1,17 +1,16 @@
 import React from 'react';
-import { FormattedMessage } from 'react-intl';
 import { shallow } from 'enzyme';
 
 import HomePage from '../index';
-import messages from '../messages';
+import TimelineContainer from '../../TimelineContainer';
 
 describe('<HomePage />', () => {
-  it('should render the page message', () => {
+  it('should render the timeline container', () => {
     const renderedComponent = shallow(
       <HomePage />
     );
     expect(renderedComponent.contains(
-      <FormattedMessage {...messages.header} />
+      <TimelineContainer />
     )).toEqual(true);
   });
 });

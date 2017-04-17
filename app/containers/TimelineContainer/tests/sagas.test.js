@@ -22,9 +22,9 @@ describe('fetchTimeline Saga', () => {
 
   it('should dispatch the requestTimelineSucceeded action if it requests the data successfully', () => {
     const response = [{
-      name: 'First repo',
+      name: 'First marker',
     }, {
-      name: 'Second repo',
+      name: 'Second marker',
     }];
     const putDescriptor = fetchTimelineGenerator.next(response).value;
     expect(putDescriptor).toEqual(put(requestTimelineSucceeded(response)));
