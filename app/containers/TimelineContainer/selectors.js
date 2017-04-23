@@ -16,8 +16,14 @@ const makeSelectActiveMarkerId = () => createSelector(
   (timelineContainerState) => timelineContainerState.get('activeMarkerId')
 );
 
+const makeSelectPreviewMarkerData = () => createSelector(
+  selectTimelineContainer,
+  (timelineContainerState) => timelineContainerState.get('previewMarkerData')
+);
+
 export {
   selectTimelineContainer,
   makeSelectTimeline,
   makeSelectActiveMarkerId,
+  makeSelectPreviewMarkerData,
 };

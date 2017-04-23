@@ -6,11 +6,11 @@
 
 import React, { PropTypes } from 'react';
 import THREE from 'three';
-import { Iterable } from 'immutable'
+import { Iterable } from 'immutable';
 
 import Wrapper from './Wrapper';
 
-import globeImage from '../../images/world.png'
+import globeImage from '../../images/world.png';
 
 const ORIGINAL_WIDTH = 928;
 const ORIGINAL_HEIGHT = 908;
@@ -25,8 +25,8 @@ class Globe extends React.PureComponent { // eslint-disable-line react/prefer-st
   componentDidMount() {
     this.mouse = { x: 0, y: 0, z: 1 };
     this.mouseOnDown = { x: 0, y: 0 };
-    this.rotation = { x: Math.PI * 3 / 2, y: Math.PI / 8 };
-    this.target = { x: Math.PI * 3 / 2, y: Math.PI / 8 };
+    this.rotation = { x: (Math.PI * 3) / 2, y: Math.PI / 8 };
+    this.target = { x: (Math.PI * 3) / 2, y: Math.PI / 8 };
     this.targetOnDown = { x: 0, y: 0 };
     this.distance = 100000;
     this.distanceTarget = 100000;
@@ -34,13 +34,12 @@ class Globe extends React.PureComponent { // eslint-disable-line react/prefer-st
     this.ray = new THREE.Raycaster();
     this.mouseVector = new THREE.Vector3();
     this.intersects = [];
-    //$mapTooltip = $('.map-tooltip')
 
     this.setupScene();
   }
 
   componentWillReceiveProps(newProps) {
-    const { timeline, activeMarkerId } = newProps
+    const { timeline, activeMarkerId } = newProps;
     if (activeMarkerId !== this.props.activeMarkerId) {
       const activeMarker = timeline.find((item) => item.get('id') === activeMarkerId);
       this.moveToPoint(activeMarker.get('lat'), activeMarker.get('lon'));
@@ -96,7 +95,7 @@ class Globe extends React.PureComponent { // eslint-disable-line react/prefer-st
         width: this.w,
         marginTop: `-${(this.h / 2)}px`,
         marginLeft: `-${(this.w / 2)}px`,
-      }
+      },
     });
   }
 
@@ -123,8 +122,8 @@ class Globe extends React.PureComponent { // eslint-disable-line react/prefer-st
   }
 
   addMarker = (markerData) => {
-    const phi = (90 - markerData.get('lat')) * Math.PI / 180;
-    const theta = (180 - markerData.get('lon')) * Math.PI / 180;
+    const phi = ((90 - markerData.get('lat')) * Math.PI) / 180;
+    const theta = ((180 - markerData.get('lon')) * Math.PI) / 180;
     const geometry = new THREE.SphereGeometry(2, 32, 32);
     const material = new THREE.MeshBasicMaterial({
       color: 0x607D8B,
@@ -158,31 +157,43 @@ class Globe extends React.PureComponent { // eslint-disable-line react/prefer-st
           cursor: 'move',
         },
       });
-      this.isMouseDownOnGlobe = true
+      this.isMouseDownOnGlobe = true;
     }
   }
 
   onMouseMove = (event) => {
-    const boundingClientRect = this.container.getBoundingClientRect()
+    const boundingClientRect = this.container.getBoundingClientRect();
     const x = event.pageX - boundingClientRect.left;
     const y = event.pageY - boundingClientRect.top;
     this.mouse.x = (x / this.w) * 2 - 1;
     this.mouse.y = - (y / this.h) * 2 + 1;
-    this.mouseVector.set(this.mouse.x, this.mouse.y, this.mouse.z);
 
-    if (this.isMouseDownOnGlobe && this.intersects[0] && this.intersects[0].object.isGlobe) {
-      this.mouse.x = - event.clientX;
-      this.mouse.y = event.clientY;
 
-      const zoomDamp = this.distance / 1000;
+    if (this.intersects.length > 1 && !this.intersects[0].object.isGlobe) {
+      if (this.props.previewMarkerData && this.intersects[0].object.modelId === this.props.previewMarkerData.get('id')) return;
+      this.props.setPreviewMarker({
+        id: this.intersects[0].object.modelId,
+        x: event.pageX,
+        y: event.pageY,
+      });
+    }
 
-      this.target.x = this.targetOnDown.x + (this.mouse.x - this.mouseOnDown.x) * 0.005 * zoomDamp;
-      this.target.y = this.targetOnDown.y + (this.mouse.y - this.mouseOnDown.y) * 0.005 * zoomDamp;
+    if (this.intersects[0] && this.intersects[0].object.isGlobe) {
+      if (this.props.previewMarkerData) this.props.setPreviewMarker(null);
+      if (this.isMouseDownOnGlobe) {
+        this.mouse.x = -event.clientX;
+        this.mouse.y = event.clientY;
+
+        const zoomDamp = this.distance / 1000;
+
+        this.target.x = this.targetOnDown.x + (this.mouse.x - this.mouseOnDown.x) * 0.005 * zoomDamp;
+        this.target.y = this.targetOnDown.y + (this.mouse.y - this.mouseOnDown.y) * 0.005 * zoomDamp;
+      }
     }
   }
 
   onMouseUp = () => {
-    const { timeline } = this.props
+    const { timeline } = this.props;
 
     if (this.intersects[0] && !this.intersects[0].object.isGlobe) {
       const activeMarker = timeline.find((item) => item.get('id') === this.intersects[0].object.modelId);
@@ -204,6 +215,7 @@ class Globe extends React.PureComponent { // eslint-disable-line react/prefer-st
   }
 
   resize = () => {
+    // TODO: call this on a debounced window resize
     this.setStageSize();
     this.renderer.setSize(this.w, this.h);
   }
@@ -262,6 +274,11 @@ class Globe extends React.PureComponent { // eslint-disable-line react/prefer-st
 }
 
 Globe.propTypes = {
+  setActiveMarker: PropTypes.func.isRequired,
+
+  activeMarkerId: PropTypes.string,
+  previewMarkerData: PropTypes.object,
+  setPreviewMarker: PropTypes.func,
   timeline: PropTypes.instanceOf(Iterable),
 };
 

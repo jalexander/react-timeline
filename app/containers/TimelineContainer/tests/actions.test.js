@@ -4,12 +4,14 @@ import {
   requestTimelineSucceeded,
   requestTimelineFailed,
   setActiveMarker,
+  setPreviewMarker,
 } from '../actions';
 import {
   REQUEST_TIMELINE,
   REQUEST_TIMELINE_SUCCEEDED,
   REQUEST_TIMELINE_FAILED,
   SET_ACTIVE_MARKER,
+  SET_PREVIEW_MARKER,
 } from '../constants';
 
 describe('TimelineContainer actions', () => {
@@ -52,6 +54,17 @@ describe('TimelineContainer actions', () => {
         id: fixture,
       };
       expect(setActiveMarker(fixture)).toEqual(expected);
+    });
+  });
+
+  describe('setPreviewMarker', () => {
+    it('should return the correct type and the passed id', () => {
+      const fixture = 'test-id';
+      const expected = {
+        type: SET_PREVIEW_MARKER,
+        id: fixture,
+      };
+      expect(setPreviewMarker(fixture)).toEqual(expected);
     });
   });
 });

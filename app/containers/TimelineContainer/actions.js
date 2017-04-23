@@ -9,6 +9,7 @@ import {
   REQUEST_TIMELINE_SUCCEEDED,
   REQUEST_TIMELINE_FAILED,
   SET_ACTIVE_MARKER,
+  SET_PREVIEW_MARKER,
 } from './constants';
 
 export function requestTimeline() {
@@ -35,5 +36,12 @@ export function setActiveMarker(id) {
   return {
     type: SET_ACTIVE_MARKER,
     id,
+  };
+}
+
+export function setPreviewMarker(data) {
+  return {
+    type: SET_PREVIEW_MARKER,
+    data,
   };
 }

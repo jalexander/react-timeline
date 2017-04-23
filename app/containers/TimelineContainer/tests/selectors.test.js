@@ -4,6 +4,7 @@ import {
   selectTimelineContainer,
   makeSelectTimeline,
   makeSelectActiveMarkerId,
+  makeSelectPreviewMarkerData,
 } from '../selectors';
 
 describe('selectTimelineContainer', () => {
@@ -42,5 +43,18 @@ describe('makeSelectActiveMarkerId', () => {
       },
     });
     expect(activeMarkerIdSelector(mockedState)).toEqual(activeMarkerId);
+  });
+});
+
+describe('makeSelectPreviewMarkerData', () => {
+  const previewMarkerDataSelector = makeSelectPreviewMarkerData();
+  it('should select the previewMarkerData', () => {
+    const previewMarkerData = {};
+    const mockedState = fromJS({
+      timelineContainer: {
+        previewMarkerData,
+      },
+    });
+    expect(previewMarkerDataSelector(mockedState)).toEqual(previewMarkerData);
   });
 });
