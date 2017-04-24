@@ -49,7 +49,7 @@ describe('makeSelectActiveMarkerId', () => {
 describe('makeSelectPreviewMarkerData', () => {
   const previewMarkerDataSelector = makeSelectPreviewMarkerData();
   it('should select the previewMarkerData', () => {
-    const previewMarkerData = {};
+    const previewMarkerData = 'testData';
     const mockedState = fromJS({
       timelineContainer: {
         previewMarkerData,

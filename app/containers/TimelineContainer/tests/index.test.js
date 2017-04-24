@@ -14,17 +14,6 @@ describe('<TimelineContainer />', () => {
     setPreviewMarkerSpy = jest.fn();
   });
 
-  it('should render a div', () => {
-    const renderedComponent = shallow(
-      <TimelineContainer
-        requestTimeline={requestTimelineSpy}
-        setActiveMarker={setActiveMarkerSpy}
-        setPreviewMarker={setPreviewMarkerSpy}
-      />
-    );
-    expect(renderedComponent.contains(<div />)).toEqual(true);
-  });
-
   it('should request timeline data on mount', () => {
     mount(
       <TimelineContainer

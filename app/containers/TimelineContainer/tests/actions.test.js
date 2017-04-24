@@ -59,10 +59,10 @@ describe('TimelineContainer actions', () => {
 
   describe('setPreviewMarker', () => {
     it('should return the correct type and the passed id', () => {
-      const fixture = 'test-id';
+      const fixture = {};
       const expected = {
         type: SET_PREVIEW_MARKER,
-        id: fixture,
+        data: fixture,
       };
       expect(setPreviewMarker(fixture)).toEqual(expected);
     });

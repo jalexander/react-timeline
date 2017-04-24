@@ -7,14 +7,17 @@
 import React, { PropTypes } from 'react';
 import THREE from 'three';
 import { Iterable } from 'immutable';
+import { debounce } from 'lodash';
 
 import Wrapper from './Wrapper';
 
 import globeImage from '../../images/world.png';
 
-const ORIGINAL_WIDTH = 928;
-const ORIGINAL_HEIGHT = 908;
+import { ORIGINAL_WIDTH, ORIGINAL_HEIGHT } from './config';
 
+import degreesToRadians from '../../utils/degreesToRadians';
+
+const halfPI = Math.PI / 2;
 
 class Globe extends React.PureComponent { // eslint-disable-line react/prefer-stateless-function
   state = {
@@ -36,6 +39,8 @@ class Globe extends React.PureComponent { // eslint-disable-line react/prefer-st
     this.intersects = [];
 
     this.setupScene();
+
+    window.addEventListener('resize', this.resizeDebounce);
   }
 
   componentWillReceiveProps(newProps) {
@@ -47,6 +52,7 @@ class Globe extends React.PureComponent { // eslint-disable-line react/prefer-st
   }
 
   componentWillUnmount() {
+    window.removeEventListener('resize', this.resizeDebounce);
     this.stopAnimationLoop();
   }
 
@@ -99,12 +105,16 @@ class Globe extends React.PureComponent { // eslint-disable-line react/prefer-st
     });
   }
 
-  addMarkers = () => {
-    const { timeline } = this.props
-    const firstMarkerData = timeline.get(0)
+  setContainerRef = (container) => {
+    this.container = container;
+  }
 
-    this.rotation.x = this.target.x = - Math.PI / 2 + (firstMarkerData.get('lon') * Math.PI / 180);
-    this.rotation.y = this.target.y = firstMarkerData.get('lat') * Math.PI / 180;
+  addMarkers = () => {
+    const { timeline } = this.props;
+    const firstMarkerData = timeline.get(0);
+
+    this.rotation.x = this.target.x = -halfPI + degreesToRadians(firstMarkerData.get('lon'));
+    this.rotation.y = this.target.y = degreesToRadians(firstMarkerData.get('lat'));
     this.startAnimationLoop();
     timeline.forEach((markerData) => {
       this.addMarker(markerData);
@@ -122,8 +132,8 @@ class Globe extends React.PureComponent { // eslint-disable-line react/prefer-st
   }
 
   addMarker = (markerData) => {
-    const phi = ((90 - markerData.get('lat')) * Math.PI) / 180;
-    const theta = ((180 - markerData.get('lon')) * Math.PI) / 180;
+    const phi = degreesToRadians(90 - markerData.get('lat'));
+    const theta = degreesToRadians(180 - markerData.get('lon'));
     const geometry = new THREE.SphereGeometry(2, 32, 32);
     const material = new THREE.MeshBasicMaterial({
       color: 0x607D8B,
@@ -132,16 +142,18 @@ class Globe extends React.PureComponent { // eslint-disable-line react/prefer-st
     });
     const marker = new THREE.Mesh(geometry, material);
 
-    marker.position.x = 200 * Math.sin(phi) * Math.cos(theta);
-    marker.position.y = 200 * Math.cos(phi);
-    marker.position.z = 200 * Math.sin(phi) * Math.sin(theta);
+    const distanceFromSurface = 200;
+
+    marker.position.x = distanceFromSurface * Math.sin(phi) * Math.cos(theta);
+    marker.position.y = distanceFromSurface * Math.cos(phi);
+    marker.position.z = distanceFromSurface * Math.sin(phi) * Math.sin(theta);
     marker.modelId = markerData.get('id');
 
     this.scene.add(marker);
     this.pointsArray.push(marker);
   }
 
-  onMouseDown = (event) => {
+  handleMouseDown = (event) => {
     event.preventDefault();
 
     this.mouseOnDown.x = -event.clientX;
@@ -161,16 +173,23 @@ class Globe extends React.PureComponent { // eslint-disable-line react/prefer-st
     }
   }
 
-  onMouseMove = (event) => {
+  handleMouseMove = (event) => {
     const boundingClientRect = this.container.getBoundingClientRect();
     const x = event.pageX - boundingClientRect.left;
     const y = event.pageY - boundingClientRect.top;
-    this.mouse.x = (x / this.w) * 2 - 1;
-    this.mouse.y = - (y / this.h) * 2 + 1;
+    this.mouse.x = ((x / this.w) * 2) - 1;
+    this.mouse.y = (-(y / this.h) * 2) + 1;
+
+    this.mouseVector.set(this.mouse.x, this.mouse.y, this.mouse.z);
+
+    this.ray.setFromCamera(this.mouseVector, this.camera);
+    this.intersects = this.ray.intersectObjects(this.pointsArray);
 
 
-    if (this.intersects.length > 1 && !this.intersects[0].object.isGlobe) {
-      if (this.props.previewMarkerData && this.intersects[0].object.modelId === this.props.previewMarkerData.get('id')) return;
+    const isOnMarker = this.intersects.length > 1 && !this.intersects[0].object.isGlobe;
+    if (isOnMarker) {
+      const isSameMarker = this.props.previewMarkerData && this.intersects[0].object.modelId === this.props.previewMarkerData.get('id');
+      if (isSameMarker) return;
       this.props.setPreviewMarker({
         id: this.intersects[0].object.modelId,
         x: event.pageX,
@@ -178,21 +197,20 @@ class Globe extends React.PureComponent { // eslint-disable-line react/prefer-st
       });
     }
 
-    if (this.intersects[0] && this.intersects[0].object.isGlobe) {
+    const isOnGlobe = this.intersects[0] && this.intersects[0].object.isGlobe;
+    if (isOnGlobe) {
       if (this.props.previewMarkerData) this.props.setPreviewMarker(null);
       if (this.isMouseDownOnGlobe) {
         this.mouse.x = -event.clientX;
         this.mouse.y = event.clientY;
 
-        const zoomDamp = this.distance / 1000;
-
-        this.target.x = this.targetOnDown.x + (this.mouse.x - this.mouseOnDown.x) * 0.005 * zoomDamp;
-        this.target.y = this.targetOnDown.y + (this.mouse.y - this.mouseOnDown.y) * 0.005 * zoomDamp;
+        this.target.x = this.targetOnDown.x + ((this.mouse.x - this.mouseOnDown.x) * 0.005);
+        this.target.y = this.targetOnDown.y + ((this.mouse.y - this.mouseOnDown.y) * 0.005);
       }
     }
   }
 
-  onMouseUp = () => {
+  handleMouseUp = () => {
     const { timeline } = this.props;
 
     if (this.intersects[0] && !this.intersects[0].object.isGlobe) {
@@ -210,15 +228,16 @@ class Globe extends React.PureComponent { // eslint-disable-line react/prefer-st
   }
 
   moveToPoint = (lat, lng) => {
-    this.target.x = - Math.PI / 2 + (lng * Math.PI / 180);
-    this.target.y = lat * Math.PI / 180;
+    this.target.x = -halfPI + degreesToRadians(lng);
+    this.target.y = degreesToRadians(lat);
   }
 
   resize = () => {
-    // TODO: call this on a debounced window resize
     this.setStageSize();
     this.renderer.setSize(this.w, this.h);
   }
+
+  resizeDebounce = debounce(this.resize, 250)
 
   zoom = (delta) => {
     this.distanceTarget -= delta;
@@ -236,11 +255,13 @@ class Globe extends React.PureComponent { // eslint-disable-line react/prefer-st
   }
 
   sceneRender = () => {
-    this.zoom(0);
+    if (this.distance > 1001) {
+      this.zoom(0);
+      this.distance += Math.round((this.distanceTarget - this.distance) * 0.3);
+    }
 
     this.rotation.x += (this.target.x - this.rotation.x) * 0.05;
     this.rotation.y += (this.target.y - this.rotation.y) * 0.05;
-    this.distance += (this.distanceTarget - this.distance) * 0.3;
 
     this.camera.position.x = this.distance * Math.sin(this.rotation.x) * Math.cos(this.rotation.y);
     this.camera.position.y = this.distance * Math.sin(this.rotation.y);
@@ -248,25 +269,16 @@ class Globe extends React.PureComponent { // eslint-disable-line react/prefer-st
 
     this.camera.lookAt(this.globeMesh.position);
 
-    this.mouseVector.set(this.mouse.x, this.mouse.y, this.mouse.z);
-
-    this.ray.setFromCamera(this.mouseVector, this.camera);
-    this.intersects = this.ray.intersectObjects(this.pointsArray);
-
     this.renderer.render(this.scene, this.camera);
-  }
-
-  setContainerRef = (container) => {
-    this.container = container;
   }
 
   render() {
     return (
       <Wrapper
         innerRef={this.setContainerRef}
-        onMouseDown={this.onMouseDown}
-        onMouseMove={this.onMouseMove}
-        onMouseUp={this.onMouseUp}
+        onMouseDown={this.handleMouseDown}
+        onMouseMove={this.handleMouseMove}
+        onMouseUp={this.handleMouseUp}
         style={this.state.style}
       />
     );
