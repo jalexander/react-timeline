@@ -49,16 +49,14 @@ const Wrapper = styled.div`
   }
 `;
 
-const Date = styled.p`
-  white-space: nowrap;
-
-  opacity: 0.4;
-  color: white;
-`;
-
 const Title = styled.p`
   white-space: nowrap;
   color: white;
+  margin: 0;
+`;
+
+const Date = styled(Title)`
+  opacity: 0.4;
 `;
 
 class Tooltip extends React.PureComponent { // eslint-disable-line react/prefer-stateless-function

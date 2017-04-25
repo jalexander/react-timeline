@@ -8,10 +8,12 @@ import React, { PropTypes } from 'react';
 import { connect } from 'react-redux';
 import { createStructuredSelector } from 'reselect';
 import { Iterable } from 'immutable';
-import { makeSelectTimeline, makeSelectActiveMarkerId, makeSelectPreviewMarkerData } from './selectors';
-import { requestTimeline, setActiveMarker, setPreviewMarker } from './actions';
+import { debounce } from 'lodash';
+import { makeSelectTimeline, makeSelectActiveMarkerId, makeSelectPreviewMarkerData, makeSelectStage } from './selectors';
+import { requestTimeline, setActiveMarker, setPreviewMarker, setStageDimensions } from './actions';
 
 import Globe from '../../components/Globe';
+import Carousel from '../../components/Carousel';
 import Tooltip from '../../components/Tooltip';
 
 export class TimelineContainer extends React.PureComponent { // eslint-disable-line react/prefer-stateless-function
@@ -19,12 +21,22 @@ export class TimelineContainer extends React.PureComponent { // eslint-disable-l
     requestTimeline: PropTypes.func.isRequired,
   }
 
-  componentWillMount() {
+  componentDidMount() {
     this.props.requestTimeline();
+    window.addEventListener('resize', this.resizeDebounce);
+    this.resize();
   }
 
+  componentWillUnmount() {
+    window.removeEventListener('resize', this.resizeDebounce);
+  }
+
+  resize = () => { this.props.setStageDimensions(); }
+
+  resizeDebounce = debounce(this.resize, 250)
+
   render() {
-    const { activeMarkerId, previewMarkerData, timeline } = this.props;
+    const { activeMarkerId, previewMarkerData, timeline, stage } = this.props;
     let previewMarker;
     if (previewMarkerData) previewMarker = timeline.find((item) => item.get('id') === previewMarkerData.get('id'));
     return (
@@ -39,6 +51,21 @@ export class TimelineContainer extends React.PureComponent { // eslint-disable-l
               activeMarkerId,
               previewMarkerData,
               timeline,
+              stage,
+            }}
+          />
+        }
+        {
+          !!timeline &&
+          timeline.size > 0 &&
+          <Carousel
+            setActiveMarker={this.props.setActiveMarker}
+            setPreviewMarker={this.props.setPreviewMarker}
+            {...{
+              activeMarkerId,
+              previewMarkerData,
+              timeline,
+              stage,
             }}
           />
         }
@@ -52,6 +79,7 @@ TimelineContainer.propTypes = {
   requestTimeline: PropTypes.func.isRequired,
   setActiveMarker: PropTypes.func.isRequired,
   setPreviewMarker: PropTypes.func.isRequired,
+  setStageDimensions: PropTypes.func.isRequired,
   timeline: PropTypes.instanceOf(Iterable),
 
   activeMarkerId: PropTypes.string,
@@ -62,6 +90,7 @@ const mapStateToProps = createStructuredSelector({
   timeline: makeSelectTimeline(),
   activeMarkerId: makeSelectActiveMarkerId(),
   previewMarkerData: makeSelectPreviewMarkerData(),
+  stage: makeSelectStage(),
 });
 
 function mapDispatchToProps(dispatch) {
@@ -69,6 +98,7 @@ function mapDispatchToProps(dispatch) {
     requestTimeline: () => dispatch(requestTimeline()),
     setActiveMarker: (id) => dispatch(setActiveMarker(id)),
     setPreviewMarker: (id) => dispatch(setPreviewMarker(id)),
+    setStageDimensions: () => dispatch(setStageDimensions()),
   };
 }
 

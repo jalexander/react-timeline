@@ -7,13 +7,10 @@
 import React, { PropTypes } from 'react';
 import THREE from 'three';
 import { Iterable } from 'immutable';
-import { debounce } from 'lodash';
 
 import Wrapper from './Wrapper';
 
 import globeImage from '../../images/world.png';
-
-import { ORIGINAL_WIDTH, ORIGINAL_HEIGHT } from './config';
 
 import degreesToRadians from '../../utils/degreesToRadians';
 
@@ -26,6 +23,7 @@ class Globe extends React.PureComponent { // eslint-disable-line react/prefer-st
   }
 
   componentDidMount() {
+    const { stage } = this.props;
     this.mouse = { x: 0, y: 0, z: 1 };
     this.mouseOnDown = { x: 0, y: 0 };
     this.rotation = { x: (Math.PI * 3) / 2, y: Math.PI / 8 };
@@ -37,31 +35,33 @@ class Globe extends React.PureComponent { // eslint-disable-line react/prefer-st
     this.ray = new THREE.Raycaster();
     this.mouseVector = new THREE.Vector3();
     this.intersects = [];
+    this.stageWidth = stage.get('width');
+    this.stageHeight = stage.get('height');
 
     this.setupScene();
-
-    window.addEventListener('resize', this.resizeDebounce);
   }
 
   componentWillReceiveProps(newProps) {
-    const { timeline, activeMarkerId } = newProps;
+    const { timeline, activeMarkerId, stage } = newProps;
+
     if (activeMarkerId !== this.props.activeMarkerId) {
       const activeMarker = timeline.find((item) => item.get('id') === activeMarkerId);
       this.moveToPoint(activeMarker.get('lat'), activeMarker.get('lon'));
     }
+
+    if (stage !== this.props.stage) {
+      this.stageWidth = stage.get('width');
+      this.stageHeight = stage.get('height');
+      this.renderer.setSize(this.stageWidth, this.stageHeight);
+    }
   }
 
   componentWillUnmount() {
-    window.removeEventListener('resize', this.resizeDebounce);
     this.stopAnimationLoop();
   }
 
   setupScene = () => {
-    this.setStageSize();
-
-    this.camera = new THREE.PerspectiveCamera(25, this.w / this.h, 1, 10000);
-    this.camera.position.z = this.distance;
-
+    this.setupCamera();
     const globeMaterial = new THREE.MeshBasicMaterial();
 
     globeMaterial.map = new THREE.TextureLoader().load(globeImage);
@@ -71,13 +71,14 @@ class Globe extends React.PureComponent { // eslint-disable-line react/prefer-st
       new THREE.SphereGeometry(200, 64, 64),
       globeMaterial
     );
+
     this.globeMesh.rotation.y = Math.PI;
     this.globeMesh.isGlobe = true;
     this.scene.add(this.globeMesh);
     this.pointsArray = [this.globeMesh];
 
     this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-    this.renderer.setSize(this.w, this.h);
+    this.renderer.setSize(this.stageWidth, this.stageHeight);
 
     this.renderer.domElement.style.position = 'absolute';
 
@@ -86,23 +87,9 @@ class Globe extends React.PureComponent { // eslint-disable-line react/prefer-st
     this.addMarkers();
   }
 
-  setStageSize = () => {
-    const ratio = Math.min(
-      (window.innerWidth - 50) / ORIGINAL_WIDTH,
-      (window.innerHeight + 150) / ORIGINAL_HEIGHT
-    );
-
-    this.w = Math.ceil(ORIGINAL_WIDTH * ratio);
-    this.h = Math.ceil(ORIGINAL_HEIGHT * ratio);
-
-    this.setState({
-      style: {
-        height: this.h,
-        width: this.w,
-        marginTop: `-${(this.h / 2)}px`,
-        marginLeft: `-${(this.w / 2)}px`,
-      },
-    });
+  setupCamera = () => {
+    this.camera = new THREE.PerspectiveCamera(25, this.stageWidth / this.stageHeight, 1, 10000);
+    this.camera.position.z = this.distance;
   }
 
   setContainerRef = (container) => {
@@ -155,6 +142,7 @@ class Globe extends React.PureComponent { // eslint-disable-line react/prefer-st
 
   handleMouseDown = (event) => {
     event.preventDefault();
+    this.props.setPreviewMarker(null);
 
     this.mouseOnDown.x = -event.clientX;
     this.mouseOnDown.y = event.clientY;
@@ -177,8 +165,8 @@ class Globe extends React.PureComponent { // eslint-disable-line react/prefer-st
     const boundingClientRect = this.container.getBoundingClientRect();
     const x = event.pageX - boundingClientRect.left;
     const y = event.pageY - boundingClientRect.top;
-    this.mouse.x = ((x / this.w) * 2) - 1;
-    this.mouse.y = (-(y / this.h) * 2) + 1;
+    this.mouse.x = ((x / this.stageWidth) * 2) - 1;
+    this.mouse.y = (-(y / this.stageHeight) * 2) + 1;
 
     this.mouseVector.set(this.mouse.x, this.mouse.y, this.mouse.z);
 
@@ -232,13 +220,6 @@ class Globe extends React.PureComponent { // eslint-disable-line react/prefer-st
     this.target.y = degreesToRadians(lat);
   }
 
-  resize = () => {
-    this.setStageSize();
-    this.renderer.setSize(this.w, this.h);
-  }
-
-  resizeDebounce = debounce(this.resize, 250)
-
   zoom = (delta) => {
     this.distanceTarget -= delta;
     this.distanceTarget = this.distanceTarget > 1000 ? 1000 : this.distanceTarget;
@@ -273,6 +254,9 @@ class Globe extends React.PureComponent { // eslint-disable-line react/prefer-st
   }
 
   render() {
+    const { stage } = this.props;
+    const width = stage.get('width');
+    const height = stage.get('height');
     return (
       <Wrapper
         innerRef={this.setContainerRef}
@@ -280,6 +264,7 @@ class Globe extends React.PureComponent { // eslint-disable-line react/prefer-st
         onMouseMove={this.handleMouseMove}
         onMouseUp={this.handleMouseUp}
         style={this.state.style}
+        {...{ width, height }}
       />
     );
   }
@@ -291,6 +276,7 @@ Globe.propTypes = {
   activeMarkerId: PropTypes.string,
   previewMarkerData: PropTypes.object,
   setPreviewMarker: PropTypes.func,
+  stage: PropTypes.object,
   timeline: PropTypes.instanceOf(Iterable),
 };
 

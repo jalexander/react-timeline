@@ -9,12 +9,14 @@ import {
   REQUEST_TIMELINE_SUCCEEDED,
   SET_ACTIVE_MARKER,
   SET_PREVIEW_MARKER,
+  SET_STAGE_DIMENSIONS,
 } from './constants';
 
 const initialState = fromJS({
   timeline: [],
   activeMarkerId: null,
   previewMarkerData: null,
+  stage: null,
 });
 
 function timelineContainerReducer(state = initialState, action) {
@@ -27,6 +29,8 @@ function timelineContainerReducer(state = initialState, action) {
       return state.set('activeMarkerId', action.id);
     case SET_PREVIEW_MARKER:
       return state.set('previewMarkerData', fromJS(action.data));
+    case SET_STAGE_DIMENSIONS:
+      return state.set('stage', fromJS(action.stage));
     default:
       return state;
   }

@@ -10,7 +10,10 @@ import {
   REQUEST_TIMELINE_FAILED,
   SET_ACTIVE_MARKER,
   SET_PREVIEW_MARKER,
+  SET_STAGE_DIMENSIONS,
 } from './constants';
+
+import getStageDimensions from '../../utils/getStageDimensions'
 
 export function requestTimeline() {
   return {
@@ -44,4 +47,11 @@ export function setPreviewMarker(data) {
     type: SET_PREVIEW_MARKER,
     data,
   };
+}
+
+export function setStageDimensions() {
+  return {
+    type: SET_STAGE_DIMENSIONS,
+    stage: getStageDimensions(),
+  }
 }
